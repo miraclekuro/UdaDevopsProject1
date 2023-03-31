@@ -2,8 +2,8 @@
     "builders": [{
       "type": "azure-arm",
    
-      "client_id": "fb7cc154-5b67-4e9d-879e-0614c7a0cea1",
-      "client_secret": "x8X8Q~BV7A-LPKfAHfIqL9Hk2tXTBAFuEl8ULaWl",
+      "client_id": "ceed38af-6dad-4557-81a3-87ccd7ab55a0",
+      "client_secret": "UXr8Q~l6BJse_hosUHCuRqcd3ClwYHlAn9ipwa75",
       "tenant_id":"e241ace2-c53f-41a9-9bf4-1d70d1bd9219",
       "subscription_id": "da806e44-e7eb-48cf-9329-622a8b29afb2",
    
@@ -25,10 +25,28 @@
     "provisioners": [{
     "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
 		"inline": [
-      "sudo apt-get update",
-      "sudo apt-get install -y nginx",
-			"echo 'Hello, World!' > index.html",
-			"nohup busybox httpd -f -p 80 &"
+                "apt-get update",
+                "apt-get upgrade -y",
+                "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync",
+                "echo 'Hello, World!' > index.html",
+                "touch http.service",
+                "echo '[Unit]' > http.service",
+                "echo 'Description=This is an example of webservice' >> http.service",
+                "echo 'After=network.target' >> http.service",
+                "echo 'StartLimitIntervalSec=0' >> http.service",
+                "echo '[Service]' >> http.service",
+                "echo 'RemainAferExit=yes' >> http.service",
+                "echo 'Restart=always' >> http.service",
+                "echo 'RestartSec=1' >> http.service",
+                "echo 'User=packer' >> http.service",
+                "echo 'ExecStart=/usr/bin/nohup /bin/busybox httpd -f -p 8080 -h /home/packer' >> http.service",
+                "echo '[Install]' >> http.service",
+                "echo 'WantedBy=multi-user.target' >> http.service",
+                "sudo mv http.service /etc/systemd/system",
+                "sudo chmod 755 /etc/systemd/system/http.service",
+                "sudo chown root:root /etc/systemd/system/http.service",
+                "sudo systemctl enable http",
+                "sudo systemctl daemon-reload"
 		],
 		"inline_shebang": "/bin/sh -x",
 		"type": "shell"

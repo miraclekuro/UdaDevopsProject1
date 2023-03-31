@@ -33,30 +33,73 @@ resource "azurerm_network_security_group" "terraform_network_security_group" {
   resource_group_name = azurerm_resource_group.terraform_rg.name
   location            = azurerm_resource_group.terraform_rg.location
 
-  security_rule {
-    name = "allow-from-subnet"
-    priority = 100
-    direction = "Inbound"
-    access = "Allow"
-    protocol = "*"
-    source_address_prefix = "VirtualNetwork"
-    source_port_range = "*"
-    destination_address_prefix = "VirtualNetwork"
-    destination_port_range = "*"
-  }
-
-  security_rule {
-    name = "deny-internet"
-    priority = 200
-    direction = "Inbound"
-    access = "Deny"
-    protocol = "*"
-    source_address_prefix = "Internet"
-    source_port_range = "*"
-    destination_address_prefix = "*"
-    destination_port_range = "*"
+  tags ={
+    project = "UdaDevopsProject1"
+    createdBy = "tung nguyen"
   }
 }
+
+# Create security rules
+resource "azurerm_network_security_rule" "DenyAllInbound" {
+    name                         = "DenyAllInbound"
+    description                  = "This rule with low priority deny all the inbound traffic"
+    priority                     = 100
+    direction                    = "Inbound"
+    access                       = "Deny"
+    protocol                     = "*"
+    source_port_range            = "*"
+    destination_port_range       = "*"
+    source_address_prefix        = "*"
+    destination_address_prefix   = "*"
+    resource_group_name          = azurerm_resource_group.terraform_rg.name
+    network_security_group_name  = azurerm_network_security_group.terraform_network_security_group.name
+}
+
+resource "azurerm_network_security_rule" "AllowInboundSameVirtualNetwork" {
+    name                         = "AllowInboundSameVirtualNetwork"
+    description                  = "Allow inbound traffick inside the same Virtual Network"
+    priority                     = 101
+    direction                    = "Inbound"
+    access                       = "Allow"
+    protocol                     = "*"
+    source_port_ranges           = azurerm_virtual_network.terraform_network.address_space
+    destination_port_ranges      = azurerm_virtual_network.terraform_network.address_space
+    source_address_prefix        = "VirtualNetwork"
+    destination_address_prefix   = "VirtualNetwork"
+    resource_group_name          = azurerm_resource_group.terraform_rg.name
+    network_security_group_name  = azurerm_network_security_group.terraform_network_security_group.name
+}
+
+resource "azurerm_network_security_rule" "AllowOutboundSameVirtualNetwork" {
+    name                         = "AllowOutboundSameVirtualNetwork"
+    description                  = "Allow outbound traffick inside the same Virtual Network"
+    priority                     = 102
+    direction                    = "Outbound"
+    access                       = "Allow"
+    protocol                     = "*"
+    source_port_ranges           = azurerm_virtual_network.terraform_network.address_space
+    destination_port_ranges      = azurerm_virtual_network.terraform_network.address_space
+    source_address_prefix        = "VirtualNetwork"
+    destination_address_prefix   = "VirtualNetwork"
+    resource_group_name          = azurerm_resource_group.terraform_rg.name
+    network_security_group_name  = azurerm_network_security_group.terraform_network_security_group.name
+}
+
+resource "azurerm_network_security_rule" "AllowHTTPTrafficFromLoadBalancer" {
+    name                         = "AllowHTTPTrafficFromLoadBalancer"
+    description                  = "Allow HTTP traffic to the VMs from the load balancer."
+    priority                     = 103
+    direction                    = "Inbound"
+    access                       = "Allow"
+    protocol                     = "Tcp"
+    source_port_ranges           = azurerm_virtual_network.terraform_network.address_space
+    destination_port_ranges      = azurerm_virtual_network.terraform_network.address_space
+    source_address_prefix        = "AzureLoadBalancer"
+    destination_address_prefix   = "VirtualNetwork"
+    resource_group_name          = azurerm_resource_group.terraform_rg.name
+    network_security_group_name  = azurerm_network_security_group.terraform_network_security_group.name
+}
+
 
 # Create a network interface within the resource group
 resource "azurerm_network_interface" "terraform_network_interface" {
@@ -157,6 +200,11 @@ resource "azurerm_virtual_machine" "terraform_vm" {
 
   os_profile_linux_config {
     disable_password_authentication = false
+  }
+
+  tags ={
+    project = "UdaDevopsProject1"
+    createdBy = "tung nguyen"
   }
 }
 
