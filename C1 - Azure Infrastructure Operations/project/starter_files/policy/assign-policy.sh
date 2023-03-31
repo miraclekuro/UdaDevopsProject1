@@ -1,0 +1,1 @@
+az policy assignment create --policy tagging-policy

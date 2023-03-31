@@ -1,0 +1,36 @@
+{
+    "builders": [{
+      "type": "azure-arm",
+   
+      "client_id": "fb7cc154-5b67-4e9d-879e-0614c7a0cea1",
+      "client_secret": "x8X8Q~BV7A-LPKfAHfIqL9Hk2tXTBAFuEl8ULaWl",
+      "tenant_id":"e241ace2-c53f-41a9-9bf4-1d70d1bd9219",
+      "subscription_id": "da806e44-e7eb-48cf-9329-622a8b29afb2",
+   
+      "os_type": "Linux",
+      "image_publisher": "Canonical",
+      "image_offer": "UbuntuServer",
+      "image_sku": "18.04-LTS",
+      "azure_tags": {
+        "Owner": "Tung Nguyen",
+        "Department": "IT"
+      },
+   
+      "managed_image_resource_group_name": "myResourceGroup",
+      "managed_image_name": "UbuntuServer",
+   
+      "location": "East US",
+      "vm_size": "Standard_B1s"
+    }],
+    "provisioners": [{
+    "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+		"inline": [
+      "sudo apt-get update",
+      "sudo apt-get install -y nginx",
+			"echo 'Hello, World!' > index.html",
+			"nohup busybox httpd -f -p 80 &"
+		],
+		"inline_shebang": "/bin/sh -x",
+		"type": "shell"
+	}]
+  }

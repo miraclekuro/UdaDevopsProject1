@@ -1,0 +1,1 @@
+az policy definition create --name 'tagging-policy' --description 'This policy to deny the creation of resources that do not have tags' --mode Indexed --subscription da806e44-e7eb-48cf-9329-622a8b29afb2 --rules policy_definition.json
